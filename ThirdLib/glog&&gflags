@@ -1,0 +1,37 @@
+http://www.liuxiao.org/2018/04/glog-gflags-的安装/
+
+GFlags
+git clone https://github.com/gflags/gflags.git
+cd gflags
+mkdir build && cd build
+cmake .. -DGFLAGS_NAMESPACE=google -DCMAKE_CXX_FLAGS=-fPIC ..
+make -j4
+sudo make install
+
+
+GLog
+git clone https://github.com/google/glog
+./autogen.sh
+./configure
+make -j8
+sudo make install
+
+
+1、使用 GLog 报错：libglog.a: error adding symbols: Bad value
+产生该问题的可能原因是在 64位系统中，不能链接 GLog 生成动态库。修改方法是 GLog 需要使用如下方式编译，加入 -fPIC 编译选项：
+  ./configure CPPFLAGS="-I/usr/local/include -fPIC" LDFLAGS="-L/usr/local/lib"   替换  ./configure
+
+
+2、错误：undefined reference to `google::FlagRegisterer::FlagRegisterer
+可以尝试先卸载 GFlags：
+sudo apt-get purge libgflags-dev
+然后重新编译
+另一种可能的解决方案是，在编译 GLog 时请使用：
+./configure CPPFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib"
+
+3、错误：Make error: failed to link with libgflags.a
+产生该问题的原因有可能是需要使用动态库方式编译 GFlags
+将 GFlags 编译时选项改成动态库：
+cmake .. -DBUILD_SHARED_LIBS=ON
+并重新编译 GFlags 和 GLog。
+
